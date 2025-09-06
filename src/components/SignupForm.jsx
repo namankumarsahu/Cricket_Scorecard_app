@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 
+const API_BASE = "https://cricket-score-api-q1rd.onrender.com";
+
 export default function SignupForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,7 +29,7 @@ export default function SignupForm() {
     setServerError("");
     if (validate()) {
       try {
-        await axios.post("http://localhost:5000/api/auth/register", { email, password });
+        await axios.post(`${API_BASE}/api/auth/register`, { email, password });
         alert("Registration successful! Please login.");
         navigate("/login");
       } catch (err) {
@@ -91,6 +93,7 @@ export default function SignupForm() {
     </div>
   );
 }
+
 
 
 /* import React, { useState } from "react";

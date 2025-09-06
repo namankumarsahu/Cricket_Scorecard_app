@@ -3,6 +3,8 @@ import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 
+const API_BASE = "https://cricket-score-api-q1rd.onrender.com";
+
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +31,7 @@ export default function LoginForm() {
     setAuthError("");
     if (validate()) {
       try {
-        const res = await axios.post("http://localhost:5000/api/auth/login", { email, password });
+        const res = await axios.post(`${API_BASE}/api/auth/login`, { email, password });
         login(res.data.token);
         navigate("/");
       } catch (err) {

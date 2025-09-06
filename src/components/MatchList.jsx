@@ -3,13 +3,15 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import LogoutButton from "./LogoutButton"; // Import Logout button component
 
-// Helper to get tournament category for filtering
+// ✅ Set your deployed backend API base URL
+const API_BASE = import.meta.env.VITE_API_URL || "https://cricket-score-api.onrender.com";
+
 function getCategory(m) {
   const tn = m.tournament?.toLowerCase() || "";
   if (tn.includes("women")) return "Women";
   if (tn.includes("league")) return "League";
   if (tn.includes("cup") || tn.includes("trophy") || tn.includes("tour of")) return "International";
-  return "Domestic"; // fallback category
+  return "Domestic";
 }
 
 export default function MatchList() {
@@ -41,7 +43,7 @@ export default function MatchList() {
   const fetchMatches = async () => {
     setLoading(true);
     try {
-      const url = `http://localhost:5000/api/matches/${tab}`;
+      const url = `${API_BASE}/api/matches/${tab}`;
       const res = await axios.get(url);
       setMatches(res.data.matches || []);
     } catch (error) {
@@ -53,28 +55,19 @@ export default function MatchList() {
   };
 
   useEffect(() => {
-    if (tab !== "add") {
-      fetchMatches();
-    }
+    if (tab !== "add") fetchMatches();
     // eslint-disable-next-line
   }, [tab]);
 
-  const handleAddMatch = () => {
-    navigate("/add");
-  };
+  const handleAddMatch = () => navigate("/add");
 
-  // Filter matches by selected category
-  const filteredMatches = matches.filter((m) => {
-    if (filter === "All") return true;
-    return getCategory(m) === filter;
-  });
-
+  const filteredMatches = matches.filter((m) => (filter === "All" ? true : getCategory(m) === filter));
   const filterTabs = ["All", "International", "League", "Domestic", "Women"];
 
   return (
     <div className="min-h-screen bg-gray-400 py-6">
       <div className="max-w-4xl mx-auto p-5 bg-white rounded shadow">
-        {/* Logout button at the top right */}
+        {/* Logout button */}
         <div className="flex justify-end mb-4">
           <LogoutButton />
         </div>
@@ -87,33 +80,20 @@ export default function MatchList() {
           <div className="font-bold mb-4 text-lg">Live Cricket Score</div>
         </div>
 
-        {/* Main tabs: Live / Recent / Upcoming / Add */}
+        {/* Main tabs */}
         <div className="mb-2 border-b border-gray-300">
           <div className="flex gap-6">
-            <button
-              className={`pb-2 text-sm font-medium ${
-                tab === "live" ? "text-green-600 border-b-2 border-green-600" : "text-gray-600 hover:text-black"
-              }`}
-              onClick={() => setTab("live")}
-            >
-              Live
-            </button>
-            <button
-              className={`pb-2 text-sm font-medium ${
-                tab === "recent" ? "text-green-600 border-b-2 border-green-600" : "text-gray-600 hover:text-black"
-              }`}
-              onClick={() => setTab("recent")}
-            >
-              Recent
-            </button>
-            <button
-              className={`pb-2 text-sm font-medium ${
-                tab === "upcoming" ? "text-green-600 border-b-2 border-green-600" : "text-gray-600 hover:text-black"
-              }`}
-              onClick={() => setTab("upcoming")}
-            >
-              Upcoming
-            </button>
+            {["live", "recent", "upcoming"].map((t) => (
+              <button
+                key={t}
+                className={`pb-2 text-sm font-medium ${
+                  tab === t ? "text-green-600 border-b-2 border-green-600" : "text-gray-600 hover:text-black"
+                }`}
+                onClick={() => setTab(t)}
+              >
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </button>
+            ))}
             <button
               className={`pb-2 text-sm font-medium ${
                 tab === "add" ? "text-green-600 border-b-2 border-green-600" : "text-gray-600 hover:text-black"
@@ -125,7 +105,7 @@ export default function MatchList() {
           </div>
         </div>
 
-        {/* Category filter bar */}
+        {/* Category filter */}
         <div className="flex gap-3 mb-4">
           {filterTabs.map((cat) => (
             <button
@@ -142,20 +122,15 @@ export default function MatchList() {
           ))}
         </div>
 
+        {/* Match List */}
         <div className="flex justify-center">
           <div className="w-3/4">
             {tab === "add" ? (
-              <div className="py-6 text-center text-gray-400 text-sm">
-                Redirecting to Add Match...
-              </div>
+              <div className="py-6 text-center text-gray-400 text-sm">Redirecting to Add Match...</div>
             ) : loading ? (
-              <div className="text-gray-500 py-6 text-center text-sm">
-                Loading matches...
-              </div>
+              <div className="text-gray-500 py-6 text-center text-sm">Loading matches...</div>
             ) : filteredMatches.length === 0 ? (
-              <div className="text-gray-400 py-6 text-center text-sm">
-                No matches available
-              </div>
+              <div className="text-gray-400 py-6 text-center text-sm">No matches available</div>
             ) : (
               <div className="space-y-4">
                 {filteredMatches.map((m, idx) => {
@@ -171,9 +146,7 @@ export default function MatchList() {
                         </div>
                         <div className="flex flex-col items-end">
                           {m.isLive && (
-                            <span className="bg-green-600 text-white text-xs px-1 py-0.5 rounded mb-1">
-                              LIVE
-                            </span>
+                            <span className="bg-green-600 text-white text-xs px-1 py-0.5 rounded mb-1">LIVE</span>
                           )}
                           <span className="text-xs text-green-700 font-bold">{m.tournament}</span>
                         </div>
@@ -182,24 +155,18 @@ export default function MatchList() {
                         <div>
                           <span className="font-bold text-xs">{m.team1?.name || "Team 1"}:</span>{" "}
                           <span className="font-mono text-xs">
-                            {m.team1?.score !== "-"
-                              ? `${m.team1.score}/${m.team1.wickets} (${m.team1.overs})`
-                              : "Yet to bat"}
+                            {m.team1?.score !== "-" ? `${m.team1.score}/${m.team1.wickets} (${m.team1.overs})` : "Yet to bat"}
                           </span>
                         </div>
                         <div>
                           <span className="font-bold text-xs">{m.team2?.name || "Team 2"}:</span>{" "}
                           <span className="font-mono text-xs">
-                            {m.team2?.score !== "-"
-                              ? `${m.team2.score}/${m.team2.wickets} (${m.team2.overs})`
-                              : "Yet to bat"}
+                            {m.team2?.score !== "-" ? `${m.team2.score}/${m.team2.wickets} (${m.team2.overs})` : "Yet to bat"}
                           </span>
                         </div>
                       </div>
                       {tab === "recent" && (
-                        <div className="text-green-700 font-semibold mb-1">
-                          {winner ? `${winner} Won` : m.status}
-                        </div>
+                        <div className="text-green-700 font-semibold mb-1">{winner ? `${winner} Won` : m.status}</div>
                       )}
                       <div className="text-xs text-gray-600">
                         <span>{m.status}</span>

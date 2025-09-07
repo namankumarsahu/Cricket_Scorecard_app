@@ -9,6 +9,8 @@ import SignupForm from "./components/SignupForm";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
 import "tailwindcss";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
 
 function App() {
   const [refresh, setRefresh] = useState(false);
